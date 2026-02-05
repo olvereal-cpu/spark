@@ -49,6 +49,12 @@
     </div>
 
     <script>
+        // Код для подхвата имени из бота
+const urlParams = new URLSearchParams(window.location.search);
+const userName = urlParams.get('name') || "Гость";
+
+// Теперь ты можешь вывести это имя где угодно в приложении
+console.log("Зашел пользователь:", userName);
         const tg = window.Telegram.WebApp;
         tg.expand(); // Раскрываем на максимум
 
@@ -125,4 +131,5 @@
     </script>
 </body>
 </html>
+
 
