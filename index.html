@@ -63,20 +63,19 @@ console.log("Зашел пользователь:", userName);
 
         const users = [
            let users = [];
-const API_URL = "https://son-unbridled-randell.ngrok-free.dev/api/profiles"; // Замени на IP своего сервера/компа
+
+
+const API_URL = "https://son-unbridled-randell.ngrok-free.dev/api/profiles";
 
 async function loadProfiles() {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, {
+            headers: {
+                "ngrok-skip-browser-warning": "true" // Чтобы не вылетало окно с кнопкой Visit Site
+            }
+        });
         const data = await response.json();
-        
-        // Превращаем file_id телеграма в ссылку на фото (через твоего бота или прокси)
-        // Но пока оставим как есть, для теста
-        users = data; 
-       // Укажи здесь свой ВНЕШНИЙ IP (который узнал на 2ip.ru)
-const MY_PUBLIC_IP = "108.181.126.193"; 
-const API_URL = `http://${MY_PUBLIC_IP}:8080/api/profiles`;
-
+        users = data;
 let users = [
     { id: 999, name: "Алёна", age: 21, city: "Москва", photo: "https://via.placeholder.com/400x600?text=Alena" },
     { id: 998, name: "Катя", age: 19, city: "Питер", photo: "https://via.placeholder.com/400x600?text=Katya" }
@@ -207,6 +206,7 @@ loadProfiles();
     </script>
 </body>
 </html>
+
 
 
 
