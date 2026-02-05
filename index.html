@@ -181,16 +181,24 @@
         }
 
         function goToBot() {
-            // Вибрация при нажатии
             tg.HapticFeedback.impactOccurred('heavy');
             
-            // Замени 'GetSparkBot' на юзернейм своего бота БЕЗ собачки
-            const botUsername = "GetSparkBot"; 
+            // Пытаемся отправить данные боту напрямую
+            try {
+                tg.sendData("buy_vip");
+            } catch (e) {
+                console.log("Обычный переход");
+            }
+
+            // На всякий случай дублируем переходом по ссылке с параметром
+            // ВАЖНО: замени 'GetSparkBot' на юзернейм своего бота
+            const botUser = "GetSparkBot"; 
+            tg.openTelegramLink(`https://t.me/${botUser}?start=pay_vip`);
             
-            // Открываем бота и закрываем WebApp
-            tg.openTelegramLink(`https://t.me/${botUsername}`);
             tg.close();
+        }
         }
     </script>
 </body>
+
 </html>
