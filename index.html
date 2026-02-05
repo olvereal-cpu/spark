@@ -3,202 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SPARK Dating</title>
+    <title>Spark Dating</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --red: #ff4b6b; --gold: #ffcf40; --dark: #121212; }
+        body { font-family: -apple-system, sans-serif; background-color: #000; color: white; margin: 0; display: flex; flex-direction: column; height: 100vh; justify-content: center; align-items: center; overflow: hidden; }
+        .card-container { position: relative; width: 92vw; height: 72vh; }
+        .card { position: absolute; width: 100%; height: 100%; border-radius: 24px; overflow: hidden; display: none; background: #1a1a1a; box-shadow: 0 10px 30px rgba(0,0,0,0.6); border: 1px solid #333; }
+        .card.active { display: block; }
+        .card img { width: 100%; height: 100%; object-fit: cover; transition: 0.3s; }
         
-        body { 
-            font-family: -apple-system, system-ui, sans-serif; 
-            background: var(--dark); color: white; margin: 0; 
-            overflow: hidden; display: flex; flex-direction: column; align-items: center;
-        }
+        /* VIP БЕЙДЖИК НА ФОТО */
+        .vip-badge { position: absolute; top: 15px; right: 15px; background: linear-gradient(45deg, #ffbd00, #ff9500); color: black; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 5; }
+        
+        .info { position: absolute; bottom: 0; width: 100%; padding: 30px 20px; background: linear-gradient(to top, rgba(0,0,0,1) 40%, rgba(0,0,0,0.6) 70%, transparent); box-sizing: border-box; }
+        .name { font-size: 28px; font-weight: bold; margin-bottom: 6px; }
+        .desc { font-size: 15px; color: #ccc; line-height: 1.4; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+        
+        .controls { display: flex; gap: 25px; margin-top: 30px; z-index: 5; }
+        .btn { width: 70px; height: 70px; border-radius: 50%; border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 30px; transition: 0.2s; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-no { background: #262626; color: #ff4444; }
+        .btn-yes { background: linear-gradient(45deg, #ff3366, #ff6633); color: white; }
+        .btn:active { transform: scale(0.85); }
 
-        header { 
-            padding: 15px 0; display: flex; justify-content: center; 
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(10px); 
-            position: fixed; top: 0; width: 100%; z-index: 1000;
-        }
-        .logo { font-size: 24px; font-weight: 900; color: var(--red); letter-spacing: 2px; }
-
-        .card-container {
-            perspective: 1000px; margin-top: 70px;
-            width: 90%; max-width: 380px; height: 65vh; position: relative;
-        }
-
-        .card { 
-            width: 100%; height: 100%; border-radius: 28px;
-            background-size: cover; background-position: center top;
-            position: absolute; transition: transform 0.4s ease, opacity 0.4s;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
-            display: flex; flex-direction: column; justify-content: flex-end;
-            overflow: hidden;
-        }
-
-        .blur { filter: blur(25px); transform: scale(0.95) !important; }
-
-        .info { 
-            padding: 25px 20px; background: linear-gradient(to top, rgba(0,0,0,1) 40%, transparent); 
-            text-align: left; 
-        }
-        .name { font-size: 28px; font-weight: 800; margin-bottom: 5px; }
-        .bio { font-size: 15px; opacity: 0.9; line-height: 1.4; color: #eee; }
-
-        .actions { 
-            display: flex; justify-content: center; gap: 30px; margin-top: 25px; width: 100%;
-        }
-        .btn-action {
-            width: 70px; height: 70px; border-radius: 50%; border: none;
-            font-size: 28px; cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .btn-dislike { background: white; color: var(--red); }
-        .btn-like { background: var(--red); color: white; }
-
-        /* VIP БЛОК */
-        #payBlock {
-            display: none; flex-direction: column; align-items: center;
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 2000; background: rgba(18, 18, 18, 0.92);
-            padding: 30px 20px; box-sizing: border-box; border-radius: 28px;
-            border: 1px solid rgba(255, 207, 64, 0.4);
-        }
-
-        .vip-features { text-align: left; width: 100%; margin: 20px 0; }
-        .feature-item {
-            display: flex; align-items: center; margin-bottom: 12px;
-            background: rgba(255, 255, 255, 0.07); padding: 12px; border-radius: 15px;
-        }
-        .feature-icon { margin-right: 15px; font-size: 20px; }
-        .feature-text b { color: var(--gold); display: block; font-size: 15px; }
-        .feature-text span { font-size: 12px; opacity: 0.8; }
-
-        .btn-vip {
-            background: linear-gradient(45deg, #bf953f, #fcf6ba, #aa771c);
-            color: black; padding: 20px; width: 100%; border-radius: 18px;
-            font-weight: 900; border: none; font-size: 16px;
-            text-transform: uppercase; box-shadow: 0 10px 20px rgba(191, 149, 63, 0.4);
-        }
+        /* VIP Блок Оплаты */
+        .blur { filter: blur(20px); transform: scale(1.1); }
+        .pay-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; text-align: center; padding: 25px; box-sizing: border-box; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        .feature-item { font-size: 15px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; width: 100%; max-width: 240px; text-align: left; }
+        .pay-btn { background: #fff; color: #000; border: none; padding: 18px 45px; border-radius: 35px; font-weight: bold; font-size: 17px; margin-top: 25px; cursor: pointer; transition: 0.3s; }
+        .pay-btn:active { background: #ddd; transform: scale(0.95); }
     </style>
 </head>
 <body>
 
-    <header><div class="logo">SPARK</div></header>
+    <div class="card-container" id="container"></div>
 
-    <div class="card-container">
-        <div id="mainCard" class="card">
-            <div class="info">
-                <div id="userName" class="name"></div>
-                <div id="userBio" class="bio"></div>
-            </div>
-        </div>
-
-        <div id="payBlock">
-            <h2 style="color: var(--gold); margin: 0 0 10px 0; text-align: center;">GOLD ACCESS 👑</h2>
-            <p style="font-size: 14px; opacity: 0.9; text-align: center;">Бесплатные анкеты закончились!</p>
-            
-            <div class="vip-features">
-                <div class="feature-item">
-                    <span class="feature-icon">♾</span>
-                    <div class="feature-text"><b>БЕЗЛИМИТ ЛАЙКОВ</b><span>Свайпай без ограничений</span></div>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon">👁</span>
-                    <div class="feature-text"><b>КТО ТЕБЯ ЛАЙКНУЛ?</b><span>Открой анкеты поклонников</span></div>
-                </div>
-                <div class="feature-item">
-                    <span class="feature-icon">🚀</span>
-                    <div class="feature-text"><b>ПРИОРИТЕТ В ПОИСКЕ</b><span>Тебя видят в 10 раз чаще</span></div>
-                </div>
-            </div>
-
-            <button class="btn-vip" onclick="goToBot()">АКТИВИРОВАТЬ ЗА 50 ⭐️</button>
-        </div>
-    </div>
-
-    <div class="actions" id="actionBtns">
-        <button class="btn-action btn-dislike" onclick="swipe('left')">✕</button>
-        <button class="btn-action btn-like" onclick="swipe('right')">❤</button>
+    <div class="controls" id="controls">
+        <button class="btn btn-no" onclick="nextCard()">✖</button>
+        <button class="btn btn-yes" onclick="nextCard()">❤️</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        
-        const params = new URLSearchParams(window.location.search);
-        const isVip = params.get('is_vip') === '1';
-        
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const isVip = urlParams.get('is_vip') === '1';
+
+        // Список пользователей с описаниями и отметкой Premium
         const users = [
-            {name: "Алёна, 21", bio: "Люблю архитектуру, кофе и длинные прогулки по городу. ✨", photo: "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600"},
-            {name: "Мария, 19", bio: "Танцую в стиле хип-хоп. Ищу того, кто разделит мой плейлист. 🎶", photo: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600"},
-            {name: "Лиза, 24", bio: "Маркетолог днем, мастер йоги вечером. Давай знакомиться! 🧘‍♀️", photo: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600"},
-            {name: "Юля, 22", bio: "О себе расскажу при личной встрече... если купишь VIP 😉", photo: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600"}
+            {name: "Алёна, 21", isPremium: false, desc: "Учусь на дизайнера. Пошли пить кофе и обсуждать искусство? ☕️", img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600"},
+            {name: "Мария, 19", isPremium: false, desc: "Обожаю танцы и путешествия. Ищу компанию для приключений! ✈️", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600"},
+            {name: "Лиза, 23", isPremium: true, desc: "Пишу код на Python. Расскажи о своей любимой игре? 🎮", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600"},
+            {name: "Юля, 20", isPremium: true, desc: "Фотограф. Сделаю тебе лучшие кадры в жизни! Люблю искренность ✨", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600"}
         ];
 
         let current = 0;
 
-        function updateCard() {
-            const card = document.getElementById('mainCard');
-            const btns = document.getElementById('actionBtns');
-            const pay = document.getElementById('payBlock');
+        function render() {
+            const container = document.getElementById('container');
+            container.innerHTML = '';
 
-            if (!isVip && current >= 3) { 
-                card.classList.add('blur');
-                card.style.backgroundImage = `url('${users[current].photo}')`;
-                document.getElementById('userName').innerText = "Кто-то лайкнул вас!";
-                document.getElementById('userBio').innerText = "Подпишитесь, чтобы прочитать анкету";
-                btns.style.opacity = '0.3';
-                btns.style.pointerEvents = 'none';
-                pay.style.display = 'flex';
-                return;
-            }
+            users.forEach((u, i) => {
+                const card = document.createElement('div');
+                card.className = `card ${i === current ? 'active' : ''}`;
 
-            card.style.backgroundImage = `url('${users[current].photo}')`;
-            document.getElementById('userName').innerText = users[current].name;
-            document.getElementById('userBio').innerText = users[current].bio;
+                // Если дошли до 4-й анкеты и юзер не VIP
+                if (!isVip && i >= 3) {
+                    card.innerHTML = `
+                        <img src="${u.img}" class="blur">
+                        <div class="pay-overlay">
+                            <h2 style="color: #ffbd00; margin-bottom: 10px;">👑 GOLD VIP</h2>
+                            <p style="font-size: 14px; opacity: 0.8; margin-bottom: 25px;">Больше анкет доступно только VIP-пользователям</p>
+                            
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div class="feature-item">🚀 <b>Безлимит лайков</b></div>
+                                <div class="feature-item">👀 <b>Кто тебя лайкнул</b></div>
+                                <div class="feature-item">🌟 <b>Золотой статус</b></div>
+                                <div class="feature-item">🔥 <b>Приоритет в ленте</b></div>
+                            </div>
+
+                            <button class="pay-btn" onclick="goToPay()">АКТИВИРОВАТЬ ЗА 50 ⭐️</button>
+                        </div>
+                    `;
+                    document.getElementById('controls').style.display = 'none';
+                } else {
+                    card.innerHTML = `
+                        ${u.isPremium ? '<div class="vip-badge">👑 VIP</div>' : ''}
+                        <img src="${u.img}">
+                        <div class="info">
+                            <div class="name">${u.name}</div>
+                            <div class="desc">${u.desc}</div>
+                        </div>
+                    `;
+                }
+                container.appendChild(card);
+            });
         }
 
-        function swipe(dir) {
-            if (!isVip && current >= 3) return; 
-
-            tg.HapticFeedback.impactOccurred('medium');
-            const card = document.getElementById('mainCard');
-            card.style.transform = `translateX(${dir === 'right' ? 1000 : -1000}px) rotate(${dir === 'right' ? 30 : -30}deg)`;
-            card.style.opacity = '0';
-
-            setTimeout(() => {
+        function nextCard() {
+            if (current < users.length - 1) {
                 current++;
-                if (current >= users.length && isVip) current = 0; 
-                
-                card.style.transition = 'none';
-                card.style.transform = 'translateX(0) rotate(0)';
-                updateCard();
-                setTimeout(() => {
-                    card.style.transition = '0.4s';
-                    card.style.opacity = '1';
-                }, 50);
-            }, 300);
+                tg.HapticFeedback.impactOccurred('medium');
+                render();
+            }
         }
 
-        function goToBot() {
+        function goToPay() {
             tg.HapticFeedback.impactOccurred('heavy');
             
-            // Пытаемся отправить данные боту напрямую
-            try {
-                tg.sendData("buy_vip");
-            } catch (e) {
-                console.log("Обычный переход");
-            }
+            // 1. Посылаем сигнал боту
+            tg.sendData("buy_vip");
 
-            // На всякий случай дублируем переходом по ссылке с параметром
-            // ВАЖНО: замени 'GetSparkBot' на юзернейм своего бота
+            // 2. ЗАПАСНОЙ ВАРИАНТ: Прямая ссылка на бота
+            // ВАЖНО: ЗАМЕНИ НА СВОЙ ЮЗЕРНЕЙМ!
             const botUser = "GetSparkBot"; 
             tg.openTelegramLink(`https://t.me/${botUser}?start=pay_vip`);
             
-            tg.close();
+            setTimeout(() => { tg.close(); }, 300);
         }
-        }
+
+        render();
     </script>
 </body>
-
 </html>
