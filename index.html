@@ -7,30 +7,19 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { font-family: -apple-system, sans-serif; background-color: #000; color: white; margin: 0; padding: 0; height: 100vh; width: 100vw; overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        
-        /* Главный контейнер */
         .card-container { position: relative; width: 95vw; height: 90vh; display: flex; justify-content: center; align-items: center; }
-        
         .card { position: absolute; width: 100%; height: 100%; border-radius: 20px; overflow: hidden; display: none; background: #1a1a1a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333; }
         .card.active { display: block; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
-        
-        /* VIP Бейдж */
         .vip-badge { position: absolute; top: 15px; right: 15px; background: linear-gradient(45deg, #ffbd00, #ff9500); color: black; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; z-index: 10; }
-        
-        /* Информация (Текст) */
         .info { position: absolute; bottom: 120px; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(0,0,0,0.9) 60%, transparent); box-sizing: border-box; z-index: 5; }
         .name { font-size: 26px; font-weight: bold; margin-bottom: 5px; }
         .desc { font-size: 14px; color: #ccc; line-height: 1.3; }
-        
-        /* КНОПКИ ТЕПЕРЬ ПОВЕРХ КАРТОЧКИ */
         .controls { position: absolute; bottom: 30px; display: flex; gap: 40px; justify-content: center; width: 100%; z-index: 100; }
         .btn { width: 75px; height: 75px; border-radius: 50%; border: none; display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 32px; transition: 0.2s; box-shadow: 0 4px 20px rgba(0,0,0,0.8); }
         .btn-no { background: rgba(38, 38, 38, 0.9); color: #ff4444; border: 1px solid #444; }
         .btn-yes { background: linear-gradient(45deg, #ff3366, #ff6633); color: white; }
         .btn:active { transform: scale(0.8); }
-
-        /* Окно оплаты */
         .blur { filter: blur(25px); transform: scale(1.1); }
         .pay-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; text-align: center; padding: 25px; box-sizing: border-box; }
         .feature-item { font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; width: 100%; max-width: 240px; text-align: left; }
@@ -41,7 +30,6 @@
 
     <div class="card-container">
         <div id="container" style="width: 100%; height: 100%;"></div>
-        
         <div class="controls" id="controls">
             <button class="btn btn-no" onclick="nextCard()">✖</button>
             <button class="btn btn-yes" onclick="nextCard()">❤️</button>
@@ -49,159 +37,111 @@
     </div>
 
     <script>
-        // Код для подхвата имени из бота
-const urlParams = new URLSearchParams(window.location.search);
-const userName = urlParams.get('name') || "Гость";
-
-// Теперь ты можешь вывести это имя где угодно в приложении
-console.log("Зашел пользователь:", userName);
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрываем на максимум
+        tg.expand();
 
-       
+        const urlParams = new URLSearchParams(window.location.search);
         const isVip = urlParams.get('is_vip') === '1';
+        const API_URL = "https://son-unbridled-randell.ngrok-free.dev/api/profiles";
 
-        let users = [];
-
-
-const API_URL = "https://son-unbridled-randell.ngrok-free.dev/api/profiles";
-
-async function loadProfiles() {
-    try {
-        const response = await fetch(API_URL, {
-            headers: {
-                "ngrok-skip-browser-warning": "true" // Чтобы не вылетало окно с кнопкой Visit Site
-            }
-        });
-        const data = await response.json();
-        users = data;
-let users = [
-    { id: 999, name: "Алёна", age: 21, city: "Москва", photo: "https://via.placeholder.com/400x600?text=Alena" },
-    { id: 998, name: "Катя", age: 19, city: "Питер", photo: "https://via.placeholder.com/400x600?text=Katya" }
-];
-
-let current = 0;
-
-async function loadProfiles() {
-    try {
-        console.log("Пытаюсь загрузить анкеты с:", API_URL);
-        const response = await fetch(API_URL);
-        if (response.ok) {
-            const data = await response.json();
-            if (data.length > 0) {
-                // Добавляем новых юзеров из бота в начало списка
-                users = [...data, ...users]; 
-                console.log("Данные из базы загружены:", data);
-            }
-        }
-    } catch (err) {
-        console.error("Бот не ответил, использую встроенные анкеты:", err);
-    }
-    render(); // Рисуем после загрузки
-}
-
-function render() {
-    const container = document.getElementById('container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    if (users.length === 0) return;
-
-    // Берем текущего пользователя
-    const u = users[current];
-    
-    const card = document.createElement('div');
-    // Добавляем класс active, чтобы карточка была видна
-    card.className = `card active`;
-    
-    // Формируем HTML карточки под твои данные
-    card.innerHTML = `
-        <img src="${u.photo}" alt="${u.name}" onerror="this.src='https://via.placeholder.com/400x600?text=No+Photo'">
-        <div class="info">
-            <h2>${u.name}, ${u.age}</h2>
-            <p>📍 ${u.city}</p>
-        </div>
-    `;
-
-    container.appendChild(card);
-}
-
-function nextCard() {
-    if (current < users.length - 1) {
-        current++;
-        render();
-    } else {
-        alert("Анкеты закончились!");
-    }
-}
-
-// Запуск при старте
-loadProfiles();
-}
-
-
+        let users = [
+            { id: 999, name: "Алёна", age: 21, city: "Москва", photo: "https://via.placeholder.com/400x600?text=Alena", desc: "Люблю путешествия" },
+            { id: 998, name: "Катя", age: 19, city: "Питер", photo: "https://via.placeholder.com/400x600?text=Katya", desc: "Рисую картины" }
         ];
 
         let current = 0;
 
+        async function loadProfiles() {
+            try {
+                console.log("Загрузка с:", API_URL);
+                const response = await fetch(API_URL, {
+                    headers: { "ngrok-skip-browser-warning": "true" }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        // Мапим данные из базы под формат карточек
+                        const dbUsers = data.map(u => ({
+                            id: u.id,
+                            name: u.name,
+                            age: u.age || "",
+                            city: u.city || "",
+                            photo: u.photo, // Тут уже должна быть ссылка ngrok из Python
+                            desc: u.description || "Привет! Давай знакомиться."
+                        }));
+                        users = [...dbUsers, ...users];
+                        console.log("Данные загружены успешно");
+                    }
+                }
+            } catch (err) {
+                console.error("Ошибка загрузки профилей:", err);
+            }
+            render();
+        }
+
         function render() {
             const container = document.getElementById('container');
+            const controls = document.getElementById('controls');
+            if (!container) return;
             container.innerHTML = '';
 
-            users.forEach((u, i) => {
-                const card = document.createElement('div');
-                card.className = `card ${i === current ? 'active' : ''}`;
-                
-                // Клик по фото как запасной вариант переключения
-                card.onclick = () => { if (i < 3 || isVip) nextCard(); };
+            if (users.length === 0) {
+                container.innerHTML = "<h1>Анкета загружается...</h1>";
+                return;
+            }
 
-                if (!isVip && i >= 3) {
-                    card.innerHTML = `
-                        <img src="${u.img}" class="blur">
-                        <div class="pay-overlay">
-                            <h2 style="color: #ffbd00; margin-bottom: 10px;">👑 GOLD VIP</h2>
-                            <p style="font-size: 14px; opacity: 0.8; margin-bottom: 25px;">Анкеты закончились</p>
-                            <div style="display: flex; flex-direction: column; align-items: center;">
-                                <div class="feature-item">🚀 <b>Безлимит лайков</b></div>
-                                <div class="feature-item">👀 <b>Кто тебя лайкнул</b></div>
-                                <div class="feature-item">🌟 <b>Золотой статус</b></div>
-                                <div class="feature-item">🔥 <b>Приоритет</b></div>
-                            </div>
-                            <button class="pay-btn" onclick="goToPay()">АКТИВИРОВАТЬ 50 ⭐️</button>
-                        </div>
-                    `;
-                    document.getElementById('controls').style.display = 'none';
-                } else {
-                    card.innerHTML = `
-                        ${u.isPremium ? '<div class="vip-badge">👑 VIP</div>' : ''}
-                        <img src="${u.img}">
-                        <div class="info">
-                            <div class="name">${u.name}</div>
-                            <div class="desc">${u.desc}</div>
-                        </div>
-                    `;
-                }
-                container.appendChild(card);
-            });
+            const u = users[current];
+            const card = document.createElement('div');
+            
+            // Если не VIP и анкет просмотрено больше 3 — показываем замок
+            if (!isVip && current >= 3) {
+                card.className = "card active";
+                card.innerHTML = `
+                    <img src="${u.photo}" class="blur">
+                    <div class="pay-overlay">
+                        <h2 style="color: #ffbd00; margin-bottom: 10px;">👑 GOLD VIP</h2>
+                        <p style="font-size: 14px; opacity: 0.8; margin-bottom: 25px;">Анкеты закончились</p>
+                        <div class="feature-item">🚀 <b>Безлимит лайков</b></div>
+                        <div class="feature-item">👀 <b>Кто тебя лайкнул</b></div>
+                        <button class="pay-btn" onclick="goToPay()">АКТИВИРОВАТЬ 50 ⭐️</button>
+                    </div>
+                `;
+                controls.style.display = 'none';
+            } else {
+                card.className = "card active";
+                controls.style.display = 'flex';
+                card.innerHTML = `
+                    <img src="${u.photo}" onerror="this.src='https://via.placeholder.com/400x600?text=No+Photo'">
+                    <div class="info">
+                        <div class="name">${u.name}, ${u.age}</div>
+                        <div class="desc">📍 ${u.city}<br>${u.desc}</div>
+                    </div>
+                `;
+            }
+
+            container.appendChild(card);
         }
 
         function nextCard() {
             if (current < users.length - 1) {
                 current++;
-                tg.HapticFeedback.impactOccurred('medium');
+                if (window.Telegram && tg.HapticFeedback) {
+                    tg.HapticFeedback.impactOccurred('medium');
+                }
                 render();
+            } else {
+                alert("Анкеты в твоем городе закончились!");
             }
         }
 
         function goToPay() {
             tg.HapticFeedback.impactOccurred('heavy');
-            tg.sendData("buy_vip");
-            const botUser = "GetSparkBot"; 
-            tg.openTelegramLink(`https://t.me/${botUser}?start=pay_vip`);
-            setTimeout(() => { tg.close(); }, 300);
+            tg.openTelegramLink(`https://t.me/GetSparkBot?start=pay_vip`);
         }
 
-        render();
+        // Запуск
+        loadProfiles();
     </script>
 </body>
 </html>
