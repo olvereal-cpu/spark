@@ -63,7 +63,7 @@ console.log("Зашел пользователь:", userName);
 
         const users = [
            let users = [];
-const API_URL = "http://ТВОЙ_IP_АДРЕС:8080/api/profiles"; // Замени на IP своего сервера/компа
+const API_URL = "http://108.181.126.193:8080/api/profiles"; // Замени на IP своего сервера/компа
 
 async function loadProfiles() {
     try {
@@ -74,7 +74,7 @@ async function loadProfiles() {
         // Но пока оставим как есть, для теста
         users = data; 
        // Укажи здесь свой ВНЕШНИЙ IP (который узнал на 2ip.ru)
-const MY_PUBLIC_IP = "ТВОЙ_ВНЕШНИЙ_IP_ТУТ"; 
+const MY_PUBLIC_IP = "108.181.126.193"; 
 const API_URL = `http://${MY_PUBLIC_IP}:8080/api/profiles`;
 
 let users = [
@@ -207,6 +207,7 @@ loadProfiles();
     </script>
 </body>
 </html>
+
 
 
 
