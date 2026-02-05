@@ -58,11 +58,10 @@ console.log("Зашел пользователь:", userName);
         const tg = window.Telegram.WebApp;
         tg.expand(); // Раскрываем на максимум
 
-        const urlParams = new URLSearchParams(window.location.search);
+       
         const isVip = urlParams.get('is_vip') === '1';
 
-        const users = [
-           let users = [];
+        let users = [];
 
 
 const API_URL = "https://son-unbridled-randell.ngrok-free.dev/api/profiles";
@@ -206,6 +205,7 @@ loadProfiles();
     </script>
 </body>
 </html>
+
 
 
 
