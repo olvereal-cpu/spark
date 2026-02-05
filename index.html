@@ -73,16 +73,75 @@ async function loadProfiles() {
         // Превращаем file_id телеграма в ссылку на фото (через твоего бота или прокси)
         // Но пока оставим как есть, для теста
         users = data; 
-        renderUser(); 
+       // Укажи здесь свой ВНЕШНИЙ IP (который узнал на 2ip.ru)
+const MY_PUBLIC_IP = "ТВОЙ_ВНЕШНИЙ_IP_ТУТ"; 
+const API_URL = `http://${MY_PUBLIC_IP}:8080/api/profiles`;
+
+let users = [
+    { id: 999, name: "Алёна", age: 21, city: "Москва", photo: "https://via.placeholder.com/400x600?text=Alena" },
+    { id: 998, name: "Катя", age: 19, city: "Питер", photo: "https://via.placeholder.com/400x600?text=Katya" }
+];
+
+let current = 0;
+
+async function loadProfiles() {
+    try {
+        console.log("Пытаюсь загрузить анкеты с:", API_URL);
+        const response = await fetch(API_URL);
+        if (response.ok) {
+            const data = await response.json();
+            if (data.length > 0) {
+                // Добавляем новых юзеров из бота в начало списка
+                users = [...data, ...users]; 
+                console.log("Данные из базы загружены:", data);
+            }
+        }
     } catch (err) {
-        console.error("Ошибка загрузки анкет:", err);
-        // Если API не отвечает, оставим тестовых
-        users = [{id: 1, name: "Ошибка API", age: "!", city: "Проверь IP", photo: ""}];
-        renderUser();
+        console.error("Бот не ответил, использую встроенные анкеты:", err);
+    }
+    render(); // Рисуем после загрузки
+}
+
+function render() {
+    const container = document.getElementById('container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (users.length === 0) return;
+
+    // Берем текущего пользователя
+    const u = users[current];
+    
+    const card = document.createElement('div');
+    // Добавляем класс active, чтобы карточка была видна
+    card.className = `card active`;
+    
+    // Формируем HTML карточки под твои данные
+    card.innerHTML = `
+        <img src="${u.photo}" alt="${u.name}" onerror="this.src='https://via.placeholder.com/400x600?text=No+Photo'">
+        <div class="info">
+            <h2>${u.name}, ${u.age}</h2>
+            <p>📍 ${u.city}</p>
+        </div>
+    `;
+
+    container.appendChild(card);
+}
+
+function nextCard() {
+    if (current < users.length - 1) {
+        current++;
+        render();
+    } else {
+        alert("Анкеты закончились!");
     }
 }
 
-loadProfiles(); // Запускаем загрузку при старте
+// Запуск при старте
+loadProfiles();
+}
+
+
         ];
 
         let current = 0;
@@ -148,6 +207,7 @@ loadProfiles(); // Запускаем загрузку при старте
     </script>
 </body>
 </html>
+
 
 
 
