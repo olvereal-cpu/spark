@@ -62,10 +62,27 @@ console.log("Зашел пользователь:", userName);
         const isVip = urlParams.get('is_vip') === '1';
 
         const users = [
-            {name: "Алёна, 21", isPremium: false, desc: "Учусь на дизайнера. Пошли пить кофе? ☕️", img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600"},
-            {name: "Мария, 19", isPremium: false, desc: "Обожаю танцы и путешествия! ✈️", img: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600"},
-            {name: "Лиза, 23", isPremium: true, desc: "Пишу код на Python. Расскажи о своей игре? 🎮", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=600"},
-            {name: "Юля, 20", isPremium: true, desc: "Фотограф. Сделаю тебе лучшие кадры! ✨", img: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600"}
+           let users = [];
+const API_URL = "http://ТВОЙ_IP_АДРЕС:8080/api/profiles"; // Замени на IP своего сервера/компа
+
+async function loadProfiles() {
+    try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        
+        // Превращаем file_id телеграма в ссылку на фото (через твоего бота или прокси)
+        // Но пока оставим как есть, для теста
+        users = data; 
+        renderUser(); 
+    } catch (err) {
+        console.error("Ошибка загрузки анкет:", err);
+        // Если API не отвечает, оставим тестовых
+        users = [{id: 1, name: "Ошибка API", age: "!", city: "Проверь IP", photo: ""}];
+        renderUser();
+    }
+}
+
+loadProfiles(); // Запускаем загрузку при старте
         ];
 
         let current = 0;
@@ -131,5 +148,6 @@ console.log("Зашел пользователь:", userName);
     </script>
 </body>
 </html>
+
 
 
