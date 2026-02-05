@@ -52,33 +52,38 @@
         let current = 0;
 
         async function loadProfiles() {
-            try {
-                console.log("Загрузка с:", API_URL);
-                const response = await fetch(API_URL, {
-                    headers: { "ngrok-skip-browser-warning": "true" }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.length > 0) {
-                        // Мапим данные из базы под формат карточек
-                        const dbUsers = data.map(u => ({
-                            id: u.id,
-                            name: u.name,
-                            age: u.age || "",
-                            city: u.city || "",
-                            photo: u.photo, // Тут уже должна быть ссылка ngrok из Python
-                            desc: u.description || "Привет! Давай знакомиться."
-                        }));
-                        users = [...dbUsers, ...users];
-                        console.log("Данные загружены успешно");
-                    }
-                }
-            } catch (err) {
-                console.error("Ошибка загрузки профилей:", err);
+    try {
+        const response = await fetch(API_URL, {
+            method: 'GET',
+            headers: {
+                // Этот заголовок заставляет ngrok пропускать страницу с предупреждением
+                'ngrok-skip-browser-warning': 'true',
+                'Content-Type': 'application/json'
             }
-            render();
-        }
+        });
+        if (!response.ok) throw new Error('Ошибка сети');
+        const data = await response.json();
+        
+        // Мапим данные, чтобы убедиться, что всё на месте
+        users = data.map(u => ({
+            id: u.id,
+            name: u.name || "Без имени",
+            age: u.age || "",
+            city: u.city || "",
+            // Если фото — это ID файла, оно подставится в URL сервером
+            photo: u.photo || 'https://via.placeholder.com/400x600?text=No+Photo',
+            description: u.description || "Привет! Давай знакомиться."
+        }));
+        
+        render();
+    } catch (e) {
+        console.error("Ошибка загрузки профилей:", e);
+        document.getElementById('container').innerHTML = `
+            <div style="color:white; text-align:center; padding:20px;">
+                Ошибка связи с сервером.<br>Убедитесь, что Python запущен.
+            </div>`;
+    }
+}
 
         function render() {
     const container = document.getElementById('container');
@@ -151,6 +156,7 @@
     </script>
 </body>
 </html>
+
 
 
 
