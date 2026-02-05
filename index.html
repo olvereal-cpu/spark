@@ -116,7 +116,7 @@
         function goToPay() {
             tg.HapticFeedback.impactOccurred('heavy');
             tg.sendData("buy_vip");
-            const botUser = "ЮЗЕРНЕЙМ_ТВОЕГО_БОТА"; 
+            const botUser = "GetSparkBot"; 
             tg.openTelegramLink(`https://t.me/${botUser}?start=pay_vip`);
             setTimeout(() => { tg.close(); }, 300);
         }
@@ -125,3 +125,4 @@
     </script>
 </body>
 </html>
+
