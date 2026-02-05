@@ -12,7 +12,6 @@
         .card { position: absolute; width: 100%; height: 100%; border-radius: 20px; overflow: hidden; display: none; background: #1a1a1a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333; }
         .card.active { display: block; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
-        .vip-badge { position: absolute; top: 15px; right: 15px; background: linear-gradient(45deg, #ffbd00, #ff9500); color: black; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; z-index: 10; }
         .info { position: absolute; bottom: 120px; width: 100%; padding: 20px; background: linear-gradient(to top, rgba(0,0,0,0.9) 60%, transparent); box-sizing: border-box; z-index: 5; }
         .name { font-size: 26px; font-weight: bold; margin-bottom: 5px; }
         .desc { font-size: 14px; color: #ccc; line-height: 1.3; }
@@ -23,12 +22,10 @@
         .btn:active { transform: scale(0.8); }
         .blur { filter: blur(25px); transform: scale(1.1); }
         .pay-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200; text-align: center; padding: 25px; box-sizing: border-box; }
-        .feature-item { font-size: 15px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; width: 100%; max-width: 240px; text-align: left; }
         .pay-btn { background: #fff; color: #000; border: none; padding: 18px 45px; border-radius: 35px; font-weight: bold; font-size: 17px; margin-top: 25px; }
     </style>
 </head>
 <body>
-
     <div class="card-container">
         <div id="container" style="width: 100%; height: 100%;"></div>
         <div class="controls" id="controls">
@@ -45,119 +42,73 @@
         const isVip = urlParams.get('is_vip') === '1';
         const API_URL = "https://son-unbridled-randell.ngrok-free.dev/api/profiles";
 
-        let users = [
-            { id: 999, name: "Алёна", age: 21, city: "Москва", photo: "https://via.placeholder.com/400x600?text=Alena", desc: "Люблю путешествия" },
-            { id: 998, name: "Катя", age: 19, city: "Питер", photo: "https://via.placeholder.com/400x600?text=Katya", desc: "Рисую картины" }
-        ];
-
+        let users = [];
         let current = 0;
 
         async function loadProfiles() {
-    try {
-        const response = await fetch(API_URL, {
-            method: 'GET',
-            headers: {
-                // Этот заголовок заставляет ngrok пропускать страницу с предупреждением
-                'ngrok-skip-browser-warning': 'true',
-                'Content-Type': 'application/json'
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+                const data = await response.json();
+                users = data;
+                render();
+            } catch (e) {
+                document.getElementById('container').innerHTML = `<div style="text-align:center;padding:50px;">Ошибка сервера. Проверьте ngrok.</div>`;
             }
-        });
-        if (!response.ok) throw new Error('Ошибка сети');
-        const data = await response.json();
-        
-        // Мапим данные, чтобы убедиться, что всё на месте
-        users = data.map(u => ({
-            id: u.id,
-            name: u.name || "Без имени",
-            age: u.age || "",
-            city: u.city || "",
-            // Если фото — это ID файла, оно подставится в URL сервером
-            photo: u.photo || 'https://via.placeholder.com/400x600?text=No+Photo',
-            description: u.description || "Привет! Давай знакомиться."
-        }));
-        
-        render();
-    } catch (e) {
-        console.error("Ошибка загрузки профилей:", e);
-        document.getElementById('container').innerHTML = `
-            <div style="color:white; text-align:center; padding:20px;">
-                Ошибка связи с сервером.<br>Убедитесь, что Python запущен.
-            </div>`;
-    }
-}
+        }
 
         function render() {
-    const container = document.getElementById('container');
-    const controls = document.getElementById('controls');
-    if (!container) return;
-    container.innerHTML = '';
+            const container = document.getElementById('container');
+            const controls = document.getElementById('controls');
+            if (!container || users.length === 0) return;
+            
+            container.innerHTML = '';
+            const u = users[current];
+            const card = document.createElement('div');
+            card.className = "card active";
 
-    if (users.length === 0) {
-        container.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>Загрузка анкет...</h2>";
-        return;
-    }
-
-    const u = users[current];
-    const card = document.createElement('div');
-    card.className = "card active";
-
-    // ПРОВЕРКА ДАННЫХ: подстраиваемся под поля из Python
-    // Если в Python поле называется 'photo', 'img' или 'file_id'
-    const userPhoto = u.photo || u.img || u.file_id || 'https://via.placeholder.com/400x600?text=No+Photo';
-    const userName = u.name || "Без имени";
-    const userAge = u.age || "";
-    const userCity = u.city || "";
-    const userDesc = u.description || u.desc || "Привет! Давай знакомиться.";
-
-    if (!isVip && current >= 3) {
-        // Карточка для НЕ-VIP пользователей (заглушка)
-        card.innerHTML = `
-            <img src="${userPhoto}" class="blur" crossorigin="anonymous">
-            <div class="pay-overlay">
-                <h2 style="color: #ffbd00;">👑 GOLD VIP</h2>
-                <p>Анкеты закончились</p>
-                <button class="pay-btn" onclick="goToPay()">АКТИВИРОВАТЬ 50 ⭐️</button>
-            </div>
-        `;
-        if (controls) controls.style.display = 'none';
-    } else {
-        // Обычная карточка для всех
-        if (controls) controls.style.display = 'flex';
-        card.innerHTML = `
-            <img src="${userPhoto}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/400x600?text=Error+Loading'">
-            <div class="info">
-                <div class="name">${userName}${userAge ? ', ' + userAge : ''}</div>
-                <div class="desc">📍 ${userCity}<br>${userDesc}</div>
-            </div>
-        `;
-    }
-    }
-
-    container.appendChild(card);
-}
+            if (!isVip && current >= 3) {
+                card.innerHTML = `
+                    <img src="${u.photo}" class="blur">
+                    <div class="pay-overlay">
+                        <h2 style="color: #ffbd00;">👑 GOLD VIP</h2>
+                        <p>Бесплатные анкеты закончились</p>
+                        <button class="pay-btn" onclick="goToPay()">АКТИВИРОВАТЬ VIP</button>
+                    </div>`;
+                if (controls) controls.style.display = 'none';
+            } else {
+                if (controls) controls.style.display = 'flex';
+                card.innerHTML = `
+                    <img src="${u.photo}" crossorigin="anonymous">
+                    <div class="info">
+                        <div class="name">${u.name}, ${u.age}</div>
+                        <div class="desc">📍 ${u.city}<br>${u.description || "Давай знакомиться!"}</div>
+                    </div>`;
+            }
+            container.appendChild(card);
+        }
 
         function nextCard() {
             if (current < users.length - 1) {
                 current++;
-                if (window.Telegram && tg.HapticFeedback) {
-                    tg.HapticFeedback.impactOccurred('medium');
-                }
+                tg.HapticFeedback.impactOccurred('medium');
                 render();
             } else {
-                alert("Анкеты в твоем городе закончились!");
+                alert("Анкеты закончились!");
             }
         }
 
         function goToPay() {
-            tg.HapticFeedback.impactOccurred('heavy');
-            tg.openTelegramLink(`https://t.me/GetSparkBot?start=pay_vip`);
+            tg.openTelegramLink(`https://t.me/GetSparkBot`);
         }
 
-        // Запуск
         loadProfiles();
     </script>
 </body>
 </html>
+
 
 
 
