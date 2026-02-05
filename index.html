@@ -81,47 +81,53 @@
         }
 
         function render() {
-            const container = document.getElementById('container');
-            const controls = document.getElementById('controls');
-            if (!container) return;
-            container.innerHTML = '';
+    const container = document.getElementById('container');
+    const controls = document.getElementById('controls');
+    if (!container) return;
+    container.innerHTML = '';
 
-            if (users.length === 0) {
-                container.innerHTML = "<h1>Анкета загружается...</h1>";
-                return;
-            }
+    if (users.length === 0) {
+        container.innerHTML = "<h2 style='text-align:center; margin-top:50px;'>Загрузка анкет...</h2>";
+        return;
+    }
 
-            const u = users[current];
-            const card = document.createElement('div');
-            
-            // Если не VIP и анкет просмотрено больше 3 — показываем замок
-            if (!isVip && current >= 3) {
-                card.className = "card active";
-                card.innerHTML = `
-                    <img src="${u.photo}" class="blur">
-                    <div class="pay-overlay">
-                        <h2 style="color: #ffbd00; margin-bottom: 10px;">👑 GOLD VIP</h2>
-                        <p style="font-size: 14px; opacity: 0.8; margin-bottom: 25px;">Анкеты закончились</p>
-                        <div class="feature-item">🚀 <b>Безлимит лайков</b></div>
-                        <div class="feature-item">👀 <b>Кто тебя лайкнул</b></div>
-                        <button class="pay-btn" onclick="goToPay()">АКТИВИРОВАТЬ 50 ⭐️</button>
-                    </div>
-                `;
-                controls.style.display = 'none';
-            } else {
-                card.className = "card active";
-                controls.style.display = 'flex';
-                card.innerHTML = `
-                    <img src="${u.photo}" onerror="this.src='https://via.placeholder.com/400x600?text=No+Photo'">
-                    <div class="info">
-                        <div class="name">${u.name}, ${u.age}</div>
-                        <div class="desc">📍 ${u.city}<br>${u.desc}</div>
-                    </div>
-                `;
-            }
+    const u = users[current];
+    const card = document.createElement('div');
+    card.className = "card active";
 
-            container.appendChild(card);
-        }
+    // ПРОВЕРКА ДАННЫХ: подстраиваемся под поля из Python
+    // Если в Python поле называется 'photo', 'img' или 'file_id'
+    const userPhoto = u.photo || u.img || u.file_id || 'https://via.placeholder.com/400x600?text=No+Photo';
+    const userName = u.name || "Без имени";
+    const userAge = u.age || "";
+    const userCity = u.city || "";
+    const userDesc = u.description || u.desc || "Привет! Давай знакомиться.";
+
+    if (!isVip && current >= 3) {
+        // Логика VIP-замка
+        card.innerHTML = `
+            <img src="${userPhoto}" class="blur">
+            <div class="pay-overlay">
+                <h2 style="color: #ffbd00;">👑 GOLD VIP</h2>
+                <p>Анкеты закончились</p>
+                <button class="pay-btn" onclick="goToPay()">АКТИВИРОВАТЬ 50 ⭐️</button>
+            </div>
+        `;
+        if (controls) controls.style.display = 'none';
+    } else {
+        // Обычная карточка
+        if (controls) controls.style.display = 'flex';
+        card.innerHTML = `
+            <img src="${userPhoto}" onerror="this.src='https://via.placeholder.com/400x600?text=Error+Loading'">
+            <div class="info">
+                <div class="name">${userName}${userAge ? ', ' + userAge : ''}</div>
+                <div class="desc">📍 ${userCity}<br>${userDesc}</div>
+            </div>
+        `;
+    }
+
+    container.appendChild(card);
+}
 
         function nextCard() {
             if (current < users.length - 1) {
@@ -145,6 +151,7 @@
     </script>
 </body>
 </html>
+
 
 
 
